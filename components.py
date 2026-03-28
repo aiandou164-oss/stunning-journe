@@ -3,6 +3,18 @@ import streamlit as st
 def inject_custom_css():
     st.markdown("""
 <style>
+/* Force Dark Mode natively (Bypasses config.toml) */
+[data-testid="stAppViewContainer"] {
+    background-color: #0E1117 !important;
+    color: #FAFAFA !important;
+}
+[data-testid="stHeader"] {
+    background: transparent !important;
+}
+p, div, span, h1, h2, h3, h4, h5, h6, label {
+    color: #FAFAFA !important;
+}
+
 /* Hide Streamlit Branding */
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
