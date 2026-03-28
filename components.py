@@ -3,6 +3,11 @@ import streamlit as st
 def inject_custom_css():
     st.markdown("""
 <style>
+/* Hide Streamlit Branding */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+
 .game-title {
     font-size: 2.5rem;
     font-weight: bold;
