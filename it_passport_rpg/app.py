@@ -27,7 +27,7 @@ def initialize_session_state():
             st.session_state[k] = v
 
 def main():
-    st.set_page_config(page_title="ITパスポート冒険記", page_icon="⚔️", layout="centered")
+    st.set_page_config(page_title="測量士補冒険記", page_icon="📐", layout="centered")
     initialize_session_state()
     inject_custom_css()
     
