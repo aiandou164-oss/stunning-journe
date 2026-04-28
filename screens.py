@@ -10,7 +10,7 @@ def check_level_up():
     old_lvl = st.session_state.level
     
     thresholds = [0, 150, 400, 800, 1500, 2500, 4000, 6000, 10000, 99999]
-    titles = ["見習いITエンジニア", "ITの卵", "ネットワーク見習い", "データベース探索者", "セキュリティ戦士", "ITパスポート候補生", "デジタルリアルムの英雄", "マスター・オブ・IT", "ITの神"]
+    titles = ["見習い測量士", "測量の卵", "ポール持ち", "トランシット使い", "セオドライトマスター", "GNSSアナリスト", "大地の勇者", "測量士補候補生", "測量の神"]
     
     new_lvl = 1
     for i, t in enumerate(thresholds):
@@ -24,10 +24,37 @@ def check_level_up():
         st.balloons()
         st.success(f"🎉 レベルアップ！ Lv.{new_lvl} 【{titles[new_lvl-1]}】になった！")
 
+import base64
+import json
+
+def generate_save_code():
+    data = {
+        "h": st.session_state.hp,
+        "e": st.session_state.exp,
+        "l": st.session_state.level,
+        "c": st.session_state.cleared_dungeons,
+        "w": st.session_state.wrong_questions
+    }
+    json_str = json.dumps(data)
+    return base64.b64encode(json_str.encode('utf-8')).decode('utf-8')
+
+def load_save_code(encoded):
+    try:
+        json_str = base64.b64decode(encoded.encode('utf-8')).decode('utf-8')
+        data = json.loads(json_str)
+        st.session_state.hp = data.get("h", 100)
+        st.session_state.exp = data.get("e", 0)
+        st.session_state.level = data.get("l", 1)
+        st.session_state.cleared_dungeons = data.get("c", [])
+        st.session_state.wrong_questions = data.get("w", [])
+        return True
+    except Exception:
+        return False
+
 def show_title_screen():
     play_bgm("town")
-    st.markdown('<div class="game-title">ITパスポート冒険記<br>〜デジタルの魔王を倒せ！〜</div>', unsafe_allow_html=True)
-    st.markdown("<h4 style='text-align: center;'>デジタルの魔王を倒し、ITの紋章を手に入れろ！</h4>", unsafe_allow_html=True)
+    st.markdown('<div class="game-title">測量士補冒険記<br>〜大地の魔王を倒せ！〜</div>', unsafe_allow_html=True)
+    st.markdown("<h4 style='text-align: center;'>大地の魔王を倒し、測量の紋章を手に入れろ！</h4>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
     
     render_status_bar()
@@ -54,12 +81,36 @@ def show_title_screen():
             st.rerun()
             
     st.divider()
+    st.markdown("### 💾 セーブ＆ロード（ふっかつのじゅもん）")
+    c_save, c_load = st.columns(2)
+    with c_save:
+        if st.button("発行する（現在の状態を保存）", use_container_width=True):
+            code = generate_save_code()
+            st.info("以下のコードをコピーしてメモ帳などに保存してください！再開時に入力します。")
+            st.code(code)
+    with c_load:
+        save_code_input = st.text_input("ふっかつのじゅもんを入力")
+        if st.button("ロードする（冒険を再開）", use_container_width=True):
+            if save_code_input:
+                if load_save_code(save_code_input):
+                    st.success("セーブデータを復元しました！冒険を再開できます！")
+                    time.sleep(1)
+                    st.rerun()
+                else:
+                    st.error("じゅもんが間違っています！")
+
+    st.divider()
     cleared = st.session_state.cleared_dungeons
     st.markdown("### 🏆 獲得した紋章")
     badges = []
-    if "strategy" in cleared: badges.append("🏰 ストラテジの紋章")
-    if "management" in cleared: badges.append("🌳 マネジメントの紋章")
-    if "technology" in cleared: badges.append("🗼 テクノロジの紋章")
+    if "laws" in cleared: badges.append("⚖️ 法規の紋章")
+    if "traverse" in cleared: badges.append("📐 多角の紋章")
+    if "gnss" in cleared: badges.append("📡 GNSSの紋章")
+    if "leveling" in cleared: badges.append("🌊 水準の紋章")
+    if "topographic" in cleared: badges.append("⛰️ 地形の紋章")
+    if "photogrammetry" in cleared: badges.append("✈️ 写真の紋章")
+    if "map_compilation" in cleared: badges.append("🗺️ 地図の紋章")
+    if "applied" in cleared: badges.append("🏗️ 応用の紋章")
     if "final" in cleared: badges.append("👑 魔王討伐の証")
     
     if badges:
@@ -68,16 +119,15 @@ def show_title_screen():
         st.markdown("まだ紋章を持っていません。")
 
 DUNGEON_DATA = {
-    "strategy_1": {"name": "ストラテジ村 🏡", "desc": "ストラテジ基礎", "boss": "ビジネス・スライム", "req_lv": 1, "domain": "strategy"},
-    "strategy_2": {"name": "ストラテジ砦 🏰", "desc": "ストラテジ応用", "boss": "法務ゴブリン", "req_lv": 2, "domain": "strategy"},
-    "strategy_3": {"name": "ストラテジ城 👑", "desc": "ストラテジ発展", "boss": "経営ドラゴン", "req_lv": 3, "domain": "strategy"},
-    "management_1": {"name": "マネジメント森 🌳", "desc": "マネジメント基礎", "boss": "開発ウルフ", "req_lv": 2, "domain": "management"},
-    "management_2": {"name": "マネジメント洞窟 🕳️", "desc": "マネジメント応用", "boss": "品質オーク", "req_lv": 3, "domain": "management"},
-    "management_3": {"name": "マネジメント山 🌋", "desc": "マネジメント発展", "boss": "監査ゴーレム", "req_lv": 4, "domain": "management"},
-    "technology_1": {"name": "テクノロジ塔 🗼", "desc": "テクノロジ基礎", "boss": "ネットワーク・バグ", "req_lv": 3, "domain": "technology"},
-    "technology_2": {"name": "テクノロジ基地 🏭", "desc": "テクノロジ応用", "boss": "DBキメラ", "req_lv": 4, "domain": "technology"},
-    "technology_3": {"name": "テクノロジ神殿 ⛩️", "desc": "テクノロジ発展", "boss": "セキュリティデーモン", "req_lv": 5, "domain": "technology"},
-    "final": {"name": "魔王城", "req_lv": 5, "domain": "all"},
+    "laws": {"name": "法規の森 ⚖️", "desc": "測量法規", "boss": "ルール・ゴブリン", "req_lv": 1, "domain": "laws"},
+    "traverse": {"name": "多角測量の荒野 📐", "desc": "多角測量", "boss": "トラバース・オーク", "req_lv": 2, "domain": "traverse"},
+    "gnss": {"name": "GNSSの塔 📡", "desc": "GNSS測量", "boss": "サテライト・ゴーレム", "req_lv": 2, "domain": "gnss"},
+    "leveling": {"name": "水準測量の洞窟 🌊", "desc": "水準測量", "boss": "レベル・ウルフ", "req_lv": 3, "domain": "leveling"},
+    "topographic": {"name": "地形探査の山 ⛰️", "desc": "地形測量", "boss": "コンター・ドラゴン", "req_lv": 4, "domain": "topographic"},
+    "photogrammetry": {"name": "空中写真の空 ✈️", "desc": "写真測量", "boss": "エアリアル・キメラ", "req_lv": 4, "domain": "photogrammetry"},
+    "map_compilation": {"name": "地図編集の館 🗺️", "desc": "地図編集", "boss": "エディット・デーモン", "req_lv": 5, "domain": "map_compilation"},
+    "applied": {"name": "応用測量の遺跡 🏗️", "desc": "応用測量", "boss": "ルート・ビルダー", "req_lv": 5, "domain": "applied"},
+    "final": {"name": "第28代大地の魔王城 🌋", "req_lv": 6, "domain": "all"},
     "weakness": {"name": "弱点特訓道場", "req_lv": 1, "domain": "all"},
 }
 
@@ -95,14 +145,12 @@ def show_dungeon_select():
     
     DUNGEONS = [v | {"id": k} for k, v in DUNGEON_DATA.items() if not k in ["final", "weakness"]]
     
-    cols = st.columns(3)
-    st_dungeons = [d for d in DUNGEONS if d['domain'] == 'strategy']
-    ma_dungeons = [d for d in DUNGEONS if d['domain'] == 'management']
-    te_dungeons = [d for d in DUNGEONS if d['domain'] == 'technology']
+    cols = st.columns(2)
+    chunk_size = (len(DUNGEONS) + 1) // 2
+    dungeon_chunks = [DUNGEONS[i:i + chunk_size] for i in range(0, len(DUNGEONS), chunk_size)]
     
-    for idx, d_list in enumerate([st_dungeons, ma_dungeons, te_dungeons]):
+    for idx, d_list in enumerate(dungeon_chunks):
         with cols[idx]:
-            st.markdown(f"### {'ストラテジ' if idx==0 else 'マネジメント' if idx==1 else 'テクノロジ'}領域")
             for d in d_list:
                 with st.container():
                     st.markdown(f"#### {d['name']}")
@@ -118,13 +166,13 @@ def show_dungeon_select():
                     st.markdown("<br>", unsafe_allow_html=True)
                 
     st.divider()
-    st.markdown("### 🏯 魔王城 (最終決戦)")
+    st.markdown("### 🌋 大地の魔王城 (最終決戦)")
     main_cleared = [c for c in st.session_state.cleared_dungeons if not str(c).startswith("category") and c != "weakness" and c != "final"]
-    if len(set(main_cleared)) >= 9:
-        if st.button("⚔️ 魔王マルウェア・ローグに挑む", type="primary", use_container_width=True):
+    if len(set(main_cleared)) >= 8:
+        if st.button("⚔️ 大地の魔王アースクエイクに挑む", type="primary", use_container_width=True):
             setup_dungeon("final", "all")
     else:
-        st.markdown(f"全9つのステージをクリアすると魔王城への道が開かれます。（現在: {len(set(main_cleared))}/9）")
+        st.markdown(f"全8つのステージをクリアすると魔王城への道が開かれます。（現在: {len(set(main_cleared))}/8）")
         
     # Footer
 
@@ -135,8 +183,8 @@ def setup_dungeon(dungeon_id, domain="all"):
     if dungeon_id == "final" or domain == "all":
         q_pool = QUESTIONS.copy()
     else:
-        mapping = {"strategy": "企業活動", "management": "システム開発", "technology": "ネットワーク"}
-        q_pool = [q for q in QUESTIONS if domain in q.get("domain", "") or domain in q.get("dungeon", "") or mapping.get(domain, domain) in q.get("category", "")]
+        mapping = {"laws": "測量法規", "traverse": "多角測量", "gnss": "GNSS", "leveling": "水準測量", "topographic": "地形測量", "photogrammetry": "写真測量", "map_compilation": "地図編集", "applied": "応用測量"}
+        q_pool = [q for q in QUESTIONS if mapping.get(domain, domain) in q.get("category", "")]
         if not q_pool: q_pool = QUESTIONS.copy()
         
     num_questions = min(10, len(q_pool))
@@ -372,14 +420,14 @@ def show_dungeon_clear():
 def show_finale():
     play_bgm("town")
     st.snow()
-    st.markdown("<h1 style='text-align: center; color: #FFD700;'>🎉 祝・ITパスポート合格レベル到達！ 🎉</h1>", unsafe_allow_html=True)
-    st.markdown("### デジタルリアルム王国に平和が訪れた！")
+    st.markdown("<h1 style='text-align: center; color: #FFD700;'>🎉 祝・測量士補試験 合格レベル到達！ 🎉</h1>", unsafe_allow_html=True)
+    st.markdown("### 大地の王国に平和が訪れた！")
     
     st.markdown(f"**最終スコア**: {st.session_state.score}pt")
     st.markdown(f"**最終レベル**: Lv.{st.session_state.level}")
     
-    show_akira_message("ついにやったぞ！これなら本試験も怖くない！")
-    show_nanami_message("本当に頑張ったね！次は『本試験シミュレーター』で実力を試してみてね！")
+    show_akira_message("ついにやったぞ！大地の魔王を封印した！これで国土地理院にも認められる！")
+    show_nanami_message("本当に頑張ったね！次は『本試験シミュレーター』で本番の28問形式に挑戦してみてね！")
     
     if st.button("タイトルに戻る", type="primary", use_container_width=True):
         st.session_state.screen = "title"
@@ -388,9 +436,9 @@ def show_finale():
 def show_exam_settings():
     play_bgm("town")
     st.markdown("## 📝 本試験シミュレーター")
-    st.info("本試験と同じ形式で出題します。（全100問からランダムで出題）")
+    st.info("測量士補本試験と同じ形式で出題します。（全28問からランダムで出題）")
     if st.button("試験開始！", type="primary", use_container_width=True):
-        st.session_state.current_questions = random.sample(QUESTIONS, min(len(QUESTIONS), 100))
+        st.session_state.current_questions = random.sample(QUESTIONS, min(len(QUESTIONS), 28))
         st.session_state.question_index = 0
         st.session_state.exam_results = []
         st.session_state.screen = "exam"
@@ -454,14 +502,14 @@ def show_exam_result():
     st.markdown("## 📊 本試験結果")
     st.markdown(f"**正答数**: {correct_count} / {total} ({rate:.1f}%)")
     
-    if rate >= 75:
-        st.markdown("<div class='exam-result-pass'>🏆 S 合格確実！余裕の合格ラインです！</div>", unsafe_allow_html=True)
+    if rate >= 80:
+        st.markdown("<div class='exam-result-pass'>🏆 S 測量士補 合格確実！余裕の合格ラインです！</div>", unsafe_allow_html=True)
     elif rate >= 65:
-        st.markdown("<div class='exam-result-pass'>✅ A 合格圏内！合格ラインを超えています！</div>", unsafe_allow_html=True)
-    elif rate >= 60:
+        st.markdown("<div class='exam-result-pass'>✅ A 合格圏内！国家試験合格ライン（18問/28問）を超えています！</div>", unsafe_allow_html=True)
+    elif rate >= 55:
         st.markdown("<div class='exam-result-fail'>⚠️ B 合格ギリギリ。苦手分野を復習しよう！</div>", unsafe_allow_html=True)
-    elif rate >= 50:
-        st.markdown("<div class='exam-result-fail'>❌ C 要復習。苦手分野が足を引っ張っています</div>", unsafe_allow_html=True)
+    elif rate >= 40:
+        st.markdown("<div class='exam-result-fail'>❌ C 要復習。知識の定着が全く足りていません。</div>", unsafe_allow_html=True)
     else:
         st.markdown("<div class='exam-result-fail'>💀 D 要基礎固め。基礎からやり直しが必要です。</div>", unsafe_allow_html=True)
         

@@ -143,45 +143,27 @@ def play_bgm(track="battle"):
         data = f.read()
     b64 = base64.b64encode(data).decode()
     vol = 0.15 if track == "town" else (0.35 if track == "boss" else (0.4 if track == "clear" else 0.25))
-    js = f'''
-    <script>
-        if (window.parent.currentTrack !== "{track}" || !window.parent.bgmPlayer) {{
-            if (window.parent.bgmPlayer) {{
-                window.parent.bgmPlayer.pause();
+    
+    st.sidebar.markdown("### 🎵 サウンド設定")
+    st.sidebar.markdown(f'''
+        <audio id="bgm-player" controls loop autoplay style="width: 100%;">
+            <source src="data:audio/wav;base64,{b64}" type="audio/wav">
+        </audio>
+        <p style="font-size: 0.8rem; color: #aaa;">※スマホで音が鳴らない場合は、再生ボタンを手動で押してください。</p>
+        <script>
+            var player = document.getElementById("bgm-player");
+            if (player) {{
+                player.volume = {vol};
             }}
-            window.parent.bgmPlayer = new Audio("data:audio/wav;base64,{b64}");
-            window.parent.bgmPlayer.loop = true;
-            window.parent.bgmPlayer.volume = {vol};
-            window.parent.bgmPlayer.play().catch(e => console.log("BGM play prevented"));
-            window.parent.currentTrack = "{track}";
-        }}
-    </script>
-    '''
-    st.components.v1.html(js, height=0, width=0)
+        </script>
+    ''', unsafe_allow_html=True)
 
 def stop_bgm():
-    js = '''
-    <script>
-        if (window.parent.bgmPlayer) {
-            window.parent.bgmPlayer.pause();
-            window.parent.bgmPlayer = null;
-            window.parent.currentTrack = null;
-        }
-    </script>
-    '''
-    st.components.v1.html(js, height=0, width=0)
+    pass
 
 def play_hit_sfx():
     hit_path = "assets/hit.wav"
     if not os.path.exists(hit_path): return
     with open(hit_path, "rb") as f:
         data = f.read()
-    b64 = base64.b64encode(data).decode()
-    js = f'''
-    <script>
-        var sfx = new Audio("data:audio/wav;base64,{b64}");
-        sfx.volume = 0.8;
-        sfx.play().catch(e => console.log("SFX play prevented"));
-    </script>
-    '''
-    st.components.v1.html(js, height=0, width=0)
+    st.audio(data, format="audio/wav", autoplay=True)
