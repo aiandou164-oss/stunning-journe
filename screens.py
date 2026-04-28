@@ -79,25 +79,6 @@ def show_title_screen():
             st.session_state.mode = "category"
             st.session_state.screen = "category_select"
             st.rerun()
-            
-    st.divider()
-    st.markdown("### 💾 セーブ＆ロード（ふっかつのじゅもん）")
-    c_save, c_load = st.columns(2)
-    with c_save:
-        if st.button("発行する（現在の状態を保存）", use_container_width=True):
-            code = generate_save_code()
-            st.info("以下のコードをコピーしてメモ帳などに保存してください！再開時に入力します。")
-            st.code(code)
-    with c_load:
-        save_code_input = st.text_input("ふっかつのじゅもんを入力")
-        if st.button("ロードする（冒険を再開）", use_container_width=True):
-            if save_code_input:
-                if load_save_code(save_code_input):
-                    st.success("セーブデータを復元しました！冒険を再開できます！")
-                    time.sleep(1)
-                    st.rerun()
-                else:
-                    st.error("じゅもんが間違っています！")
 
     st.divider()
     cleared = st.session_state.cleared_dungeons

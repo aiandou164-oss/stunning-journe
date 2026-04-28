@@ -82,14 +82,20 @@ header {visibility: hidden;}
     font-size: 1.1rem;
 }
 .stButton button {
+    -webkit-appearance: none !important;
+    appearance: none !important;
     min-height: 50px;
     font-size: 1.1rem;
     font-weight: bold;
+    background: #1E2235 !important;
     background-color: #1E2235 !important;
     color: #FAFAFA !important;
     border: 1px solid #FFD700 !important;
+    border-radius: 8px !important;
 }
 .stTextInput input, .stTextInput div[data-baseweb="input"] {
+    -webkit-appearance: none !important;
+    appearance: none !important;
     background-color: #1E2235 !important;
     color: #FAFAFA !important;
 }
