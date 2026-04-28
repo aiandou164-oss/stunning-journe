@@ -159,11 +159,16 @@ def play_bgm(track="battle"):
     
     html_code = f'''
         <div style="text-align: right; margin-bottom: 0px; padding: 5px 10px; font-family: sans-serif;">
-            <button id="toggleBtn" onclick="toggleBGM()" style="background: #1E2235; color: #FFD700; border: 1px solid #FFD700; border-radius: 8px; padding: 8px 15px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0px 2px 5px rgba(0,0,0,0.5);">
-                🎵 BGM: <span id="icon">🔈</span>
+            <button id="toggleBtn" onclick="toggleBGM()" style="border-radius: 8px; padding: 8px 15px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0px 2px 5px rgba(0,0,0,0.5); transition: 0.2s;">
+                <span id="btnText">🎵 BGM: 🔇 OFF</span>
             </button>
         </div>
         <script>
+            // Initialize global audio preference
+            if (!window.parent.hasOwnProperty('bgmEnabled')) {{
+                window.parent.bgmEnabled = false;
+            }}
+            
             // Persist audio across Streamlit reloads using window.parent
             if (!window.parent.bgmPlayer || window.parent.currentTrack !== "{track}") {{
                 if (window.parent.bgmPlayer) {{ window.parent.bgmPlayer.pause(); }}
@@ -171,30 +176,52 @@ def play_bgm(track="battle"):
                 window.parent.bgmPlayer.loop = true;
                 window.parent.bgmPlayer.volume = {vol};
                 window.parent.currentTrack = "{track}";
+                
+                // If BGM is enabled, seamlessly play the new track!
+                if (window.parent.bgmEnabled) {{
+                    window.parent.bgmPlayer.play().catch(e => console.error(e));
+                }}
+            }}
+            
+            function updateUI() {{
+                var btn = document.getElementById("toggleBtn");
+                var txt = document.getElementById("btnText");
+                if (window.parent.bgmEnabled) {{
+                    btn.style.background = "#FFD700";
+                    btn.style.color = "#0E1117";
+                    btn.style.border = "1px solid #FFD700";
+                    txt.innerHTML = "🎵 BGM: 🔊 ON";
+                }} else {{
+                    btn.style.background = "#1E2235";
+                    btn.style.color = "#FAFAFA";
+                    btn.style.border = "1px solid #555";
+                    txt.innerHTML = "🎵 BGM: 🔇 OFF";
+                }}
             }}
             
             function toggleBGM() {{
                 var p = window.parent.bgmPlayer;
-                var icon = document.getElementById("icon");
                 if (!p) return;
-                if (p.paused) {{
-                    p.play().then(() => {{
-                        icon.innerHTML = "🔊";
-                    }}).catch(e => console.error(e));
-                }} else {{
+                
+                if (window.parent.bgmEnabled) {{
+                    window.parent.bgmEnabled = false;
                     p.pause();
-                    icon.innerHTML = "🔈";
+                    updateUI();
+                }} else {{
+                    window.parent.bgmEnabled = true;
+                    p.play().then(() => {{
+                        updateUI();
+                    }}).catch(e => {{
+                        window.parent.bgmEnabled = false;
+                        updateUI();
+                        console.error(e);
+                    }});
                 }}
             }}
             
             // Sync initial state
-            setTimeout(() => {{
-                var p = window.parent.bgmPlayer;
-                var icon = document.getElementById("icon");
-                if (p && !p.paused) {{
-                    icon.innerHTML = "🔊";
-                }}
-            }}, 200);
+            updateUI();
+            setTimeout(updateUI, 200);
         </script>
     '''
     st.components.v1.html(html_code, height=60)
@@ -210,8 +237,8 @@ def play_hit_sfx():
     b64 = base64.b64encode(data).decode()
     st.components.v1.html(f'''
         <script>
-            // Only play SFX if the user has explicitly turned the BGM ON
-            if (window.parent.bgmPlayer && !window.parent.bgmPlayer.paused) {{
+            // Check global preference instead of localized player state
+            if (window.parent.bgmEnabled) {{
                 var sfx = new Audio("data:audio/wav;base64,{b64}");
                 sfx.volume = 0.8;
                 sfx.play().catch(e => console.log("SFX blocked"));
