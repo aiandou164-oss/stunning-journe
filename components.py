@@ -152,7 +152,7 @@ def play_bgm(track="battle"):
     vol = 0.15 if track == "town" else (0.35 if track == "boss" else (0.4 if track == "clear" else 0.25))
     
     st.markdown(f'''
-        <div style="background: #16213e; padding: 8px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #333 text-align: center;">
+        <div style="background: #16213e; padding: 8px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #333; text-align: center;">
             <p style="font-size: 0.75rem; color: #aaa; margin: 0 0 5px 0;">♪ BGM (スマホで鳴らない場合は👇をタップ)</p>
             <audio id="bgm-player" controls loop autoplay style="width: 100%; height: 35px;">
                 <source src="data:audio/wav;base64,{b64}" type="audio/wav">
