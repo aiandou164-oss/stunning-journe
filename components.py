@@ -85,6 +85,13 @@ header {visibility: hidden;}
     min-height: 50px;
     font-size: 1.1rem;
     font-weight: bold;
+    background-color: #1E2235 !important;
+    color: #FAFAFA !important;
+    border: 1px solid #FFD700 !important;
+}
+.stTextInput input, .stTextInput div[data-baseweb="input"] {
+    background-color: #1E2235 !important;
+    color: #FAFAFA !important;
 }
 @media (max-width: 600px) {
     .game-title { font-size: 1.8rem; }
@@ -144,18 +151,19 @@ def play_bgm(track="battle"):
     b64 = base64.b64encode(data).decode()
     vol = 0.15 if track == "town" else (0.35 if track == "boss" else (0.4 if track == "clear" else 0.25))
     
-    st.sidebar.markdown("### 🎵 サウンド設定")
-    st.sidebar.markdown(f'''
-        <audio id="bgm-player" controls loop autoplay style="width: 100%;">
-            <source src="data:audio/wav;base64,{b64}" type="audio/wav">
-        </audio>
-        <p style="font-size: 0.8rem; color: #aaa;">※スマホで音が鳴らない場合は、再生ボタンを手動で押してください。</p>
-        <script>
-            var player = document.getElementById("bgm-player");
-            if (player) {{
-                player.volume = {vol};
-            }}
-        </script>
+    st.markdown(f'''
+        <div style="background: #16213e; padding: 8px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #333 text-align: center;">
+            <p style="font-size: 0.75rem; color: #aaa; margin: 0 0 5px 0;">♪ BGM (スマホで鳴らない場合は👇をタップ)</p>
+            <audio id="bgm-player" controls loop autoplay style="width: 100%; height: 35px;">
+                <source src="data:audio/wav;base64,{b64}" type="audio/wav">
+            </audio>
+            <script>
+                var player = document.getElementById("bgm-player");
+                if (player) {{
+                    player.volume = {vol};
+                }}
+            </script>
+        </div>
     ''', unsafe_allow_html=True)
 
 def stop_bgm():

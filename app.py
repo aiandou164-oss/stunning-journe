@@ -31,6 +31,10 @@ def main():
     initialize_session_state()
     inject_custom_css()
     
+    if hasattr(st, "query_params") and "save" in st.query_params and not st.session_state.get("auto_loaded", False):
+        if screens.load_save_code(st.query_params["save"]):
+            st.session_state["auto_loaded"] = True
+            
     screen = st.session_state.screen
     if screen == "title":
         screens.show_title_screen()
@@ -54,11 +58,14 @@ def main():
         screens.show_exam_screen()
     elif screen == "exam_result":
         screens.show_exam_result()
-    else:
         st.error("Unknown screen state.")
         if st.button("タイトルに戻る"):
             st.session_state.screen = "title"
             st.rerun()
+
+    code = screens.generate_save_code()
+    if hasattr(st, "query_params"):
+        st.query_params["save"] = code
 
 if __name__ == "__main__":
     main()

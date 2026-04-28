@@ -255,7 +255,13 @@ def show_battle_screen():
     idx = st.session_state.question_index
     total = len(st.session_state.current_questions)
     
-    st.markdown(f"**[進捗] {idx+1} / {total}**")
+    col_info, col_esc = st.columns([3, 1])
+    with col_info:
+        st.markdown(f"**[進捗] {idx+1} / {total}**")
+    with col_esc:
+        if st.button("🏳️逃げる", use_container_width=True):
+            st.session_state.screen = "dungeon_select"
+            st.rerun()
     
     boss_hits = 5 if st.session_state.current_dungeon == "final" else 3
     if is_boss:
