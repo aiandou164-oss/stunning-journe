@@ -158,16 +158,41 @@ def play_bgm(track="battle"):
     vol = 0.15 if track == "town" else (0.35 if track == "boss" else (0.4 if track == "clear" else 0.25))
     
     st.markdown(f'''
-        <div style="background: #16213e; padding: 8px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #333; text-align: center;">
-            <p style="font-size: 0.75rem; color: #aaa; margin: 0 0 5px 0;">♪ BGM (スマホで鳴らない場合は👇をタップ)</p>
-            <audio id="bgm-player" controls loop autoplay style="width: 100%; height: 35px;">
-                <source src="data:audio/wav;base64,{b64}" type="audio/wav">
-            </audio>
+        <div style="text-align: right; margin-bottom: 0px; padding: 5px 10px;">
+            <button id="bgm-toggle-btn" onclick="window.toggleParentBGM()" style="background: #1E2235; color: #FFD700; border: 1px solid #FFD700; border-radius: 8px; padding: 8px 15px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0px 2px 5px rgba(0,0,0,0.5);">
+                🎵 BGM: <span id="bgm-icon">🔈</span>
+            </button>
             <script>
-                var player = document.getElementById("bgm-player");
-                if (player) {{
-                    player.volume = {vol};
+                if (!window.parent.bgmPlayer || window.parent.currentTrack !== "{track}") {{
+                    if (window.parent.bgmPlayer) {{ window.parent.bgmPlayer.pause(); }}
+                    window.parent.bgmPlayer = new Audio("data:audio/wav;base64,{b64}");
+                    window.parent.bgmPlayer.loop = true;
+                    window.parent.bgmPlayer.volume = {vol};
+                    window.parent.currentTrack = "{track}";
+                    // Autoplay removed to prevent YouTube pausing
                 }}
+                
+                window.toggleParentBGM = function() {{
+                    var p = window.parent.bgmPlayer;
+                    var b = document.getElementById("bgm-icon");
+                    if (!p) return;
+                    if (p.paused) {{
+                        p.play();
+                        b.innerHTML = "🔊";
+                    }} else {{
+                        p.pause();
+                        b.innerHTML = "🔈";
+                    }}
+                }};
+                
+                setTimeout(function() {{
+                    var b = document.getElementById("bgm-icon");
+                    if (window.parent.bgmPlayer && !window.parent.bgmPlayer.paused) {{
+                        b.innerHTML = "🔊";
+                    }} else {{
+                        b.innerHTML = "🔈";
+                    }}
+                }}, 300);
             </script>
         </div>
     ''', unsafe_allow_html=True)
@@ -180,4 +205,14 @@ def play_hit_sfx():
     if not os.path.exists(hit_path): return
     with open(hit_path, "rb") as f:
         data = f.read()
-    st.audio(data, format="audio/wav", autoplay=True)
+    b64 = base64.b64encode(data).decode()
+    st.markdown(f'''
+        <script>
+            // Only play SFX if the user has explicitly turned the BGM ON
+            if (window.parent.bgmPlayer && !window.parent.bgmPlayer.paused) {{
+                var sfx = new Audio("data:audio/wav;base64,{b64}");
+                sfx.volume = 0.8;
+                sfx.play().catch(e => console.log("SFX blocked"));
+            }}
+        </script>
+    ''', unsafe_allow_html=True)
